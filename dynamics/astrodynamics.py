@@ -10,8 +10,6 @@ def keplerian_central_body(params, x, u):
     return np.hstack((x[3:6], r_ddot))
 
 
-
-
 def semi_major_axis(rp, ra):
     """
     rp: periapsis -> radius from the central body to the nearest point on the orbital path
@@ -51,6 +49,23 @@ def get_CART_from_OSC(x_oe, degree=False):
         6. M, Mean anomaly [rad]
     """
     return brahe.sOSCtoCART(x_oe, degrees=degree)
+
+
+def get_OSC_from_CART(x_oe, degrees=False):
+    """
+    Return the set of osculating orbital elements given the cartesian state (position and velocity, ECI).
+    The input vector must be in the following form: [x, y, z, xdot, ydot, zdot]
+    The resulting vector will be in order (SatelliteDynamics.jl):
+        1. _a_, Semi-major axis [m]
+        2. _e_, Eccentricity [dimensionless]
+        3. _i_, Inclination [rad]
+        4. _Ω_, Right Ascension of the Ascending Node (RAAN) [rad]
+        5. _ω_, Argument of Perigee [ramd]
+        6. _M_, Mean anomaly [rad]
+    """
+    return brahe.sOSCtoCART(x_oe, use_degrees=degrees)
+
+
 
 
 

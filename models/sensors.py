@@ -1,17 +1,46 @@
 
-
 class GPS():
-    pass
+
+    def __init__(self):
+        self.std = None
+        pass
+
+    def measure(self, spacecraft):
+        pass
+
 
 class SunSensor():
-    pass
+
+    def __init__(self):
+        pass
+
+    def measure(self, spacecraft):
+        pass
+
 
 class Gyroscope():
-    pass 
 
+    def __init__(self):
+        self.bias = None
+        pass
+
+    def measure(self, spacecraft):
+        pass
+    
 class Magnetometer():
-    pass
+
+    def __init__(self):
+        pass
+
+    def measure(self, spacecraft):
+        pass
+    
 
 class Vision():
-    pass
 
+    def __init__(self):
+        pass
+
+    def measure(self, spacecraft):
+        pass
+    
