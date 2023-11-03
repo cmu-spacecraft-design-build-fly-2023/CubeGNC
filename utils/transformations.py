@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.linalg import expm
 
 def skew_symmetric(w):
     """
@@ -74,3 +74,8 @@ def quat_to_axisangle(q):
     angle = 2 * np.arccos(q[0])
     axis = q[1:]/np.sqrt(1 - q[0]*q[0])
     return axis*angle
+
+
+def dcm_from_phi(Φ):
+    """Compute DCM from an axis-angle"""
+    return expm(skew_symmetric(Φ))

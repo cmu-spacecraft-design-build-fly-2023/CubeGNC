@@ -5,9 +5,10 @@ import brahe
 
 
 def keplerian_central_body(params, x, u):
-    r = x[0:3] 
-    r_ddot = (1 / params['m']) * u - (params['mu'] / np.linalg.norm(r) ** 3) * r
-    return np.hstack((x[3:6], r_ddot))
+    xdot = np.zeros(6)
+    xdot[0:3] = x[3:6]
+    xdot[3:6] = (1 / params.m) * u - (params.µ / np.linalg.norm(x[0:3]) ** 3) * x[0:3]
+    return xdot
 
 
 def semi_major_axis(rp, ra):
@@ -37,7 +38,7 @@ def eccentricity(rp, ra):
 
 
 
-def get_CART_from_OSC(x_oe, degree=False):
+def get_CART_from_OSC(x_oe, degrees=False):
     """
     Return the cartesian state (position and velocity, ECI) given the corresponding set of osculating orbital elements.
     The vector must contain in order (SatelliteDynamics.jl):
@@ -48,7 +49,7 @@ def get_CART_from_OSC(x_oe, degree=False):
         5. ω, Argument of Perigee [rad]
         6. M, Mean anomaly [rad]
     """
-    return brahe.sOSCtoCART(x_oe, degrees=degree)
+    return np.array(brahe.sOSCtoCART(x_oe, use_degrees=degrees))
 
 
 def get_OSC_from_CART(x_oe, degrees=False):
@@ -63,8 +64,10 @@ def get_OSC_from_CART(x_oe, degrees=False):
         5. _ω_, Argument of Perigee [ramd]
         6. _M_, Mean anomaly [rad]
     """
-    return brahe.sOSCtoCART(x_oe, use_degrees=degrees)
+    return np.array(brahe.sCARTtoOSC(x_oe, use_degrees=degrees))
 
+def sample_orbit():
+    pass
 
 
 

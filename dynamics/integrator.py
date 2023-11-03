@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.linalg import expm
+from utils.transformations import *
 
 # Runge-Kutta 4
 def rk4(dynamics, x, u, dt):
@@ -9,7 +10,6 @@ def rk4(dynamics, x, u, dt):
     k4 = dt * dynamics(x + k3, u)
     x = x + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4)
     return x
-
 
 
 # hermite simpson implicit integrator residual
@@ -39,6 +39,6 @@ def rk4mk_attitude(params, dynamics, x1, u, dt):
     ω = x1[4:7]
 
     # Using expm from scipy to exponentiate a matrix
-    f[0:4] = np.dot(expm(H.dot(0.5 * dt * ω + (dt/6) * (k1[4:7] + k2[4:7] + k3[4:7]))), q)
+    f[0:4] = np.dot(expm(R(H.dot(0.5 * dt * ω + (dt/6) * (k1[4:7] + k2[4:7] + k3[4:7])))), q)
 
     return f
