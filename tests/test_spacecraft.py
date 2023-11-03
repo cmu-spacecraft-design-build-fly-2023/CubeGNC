@@ -36,7 +36,7 @@ for i in range(N):
     spacecraft.advance()
     q = spacecraft.get_state()[6:10]
     print(q)
-    viz.apply_rotation(q)
+    viz.apply_attitude(q)
     sleep(dt)
 
 

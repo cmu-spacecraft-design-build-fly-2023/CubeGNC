@@ -29,8 +29,8 @@ mesh.apply_transform(T)
 #print("size vertices:", len(mesh.vertices))
 #print(mesh.principal_inertia_components)
 
-output_filename = 'scaled_cubesat_' + str(scale_factor) + 'x.STL'
-mesh.export(output_filename)
+#output_filename = 'scaled_cubesat_' + str(scale_factor) + 'x.STL'
+#mesh.export(output_filename)
 
 reference_frame = trimesh.creation.axis(axis_length=2)  
 combined_mesh = trimesh.util.concatenate([mesh, reference_frame])

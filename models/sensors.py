@@ -57,6 +57,8 @@ class Gyroscope():
     def measure(self, spacecraft):
         pass
     
+
+    
 class Magnetometer():
 
     def __init__(self):

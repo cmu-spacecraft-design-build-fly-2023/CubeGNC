@@ -183,7 +183,7 @@ class Spacecraft:
 
     def get_attitude_state(self):
         if self.mode == "attitude":
-            return self._state[0:7]
+            return self._state[0:6]
         elif self.mode == "all":
             return self._state[6:13]
         else:
@@ -342,8 +342,3 @@ if __name__ == "__main__":
 
     print(spacecraft.epoch)
 
-    """
-    std_noise = ... 
-    bias = 0.1 
-    Gyroscope(std_noise, bias 
-    """

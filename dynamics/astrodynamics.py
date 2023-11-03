@@ -73,9 +73,3 @@ def sample_orbit():
 
 
 
-def accel_gravity():
-    pass
-
-def accel_J2():
-    pass
-
