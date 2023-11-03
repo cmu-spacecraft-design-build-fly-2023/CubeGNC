@@ -221,9 +221,8 @@ class Spacecraft:
         a = np.zeros(3)
 
         R_i2b = frames.rECItoECEF(self.epoch)
-        # TODO - waiting for pull request
-        # a += accel_gravity(x_eci[0:6], R_i2b, n_max=self._gravity_degree, m_max=self._gravity_order)
-        a += - (self.µ / np.linalg.norm(x_eci[0:3]) ** 3) * x_eci[0:3]
+        a += accel_gravity(x_eci[0:6], R_i2b, n_max=self._gravity_degree, m_max=self._gravity_order)
+        #a += - (self.µ / np.linalg.norm(x_eci[0:3]) ** 3) * x_eci[0:3]
 
         if self._drag:
             r_sun = brahe.sun_position(self.epoch)
