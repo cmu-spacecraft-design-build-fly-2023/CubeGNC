@@ -227,9 +227,9 @@ class Spacecraft:
         if self._drag:
             r_sun = brahe.sun_position(self.epoch)
             rho = density_harris_priester(x_eci[0:6], r_sun)
-            print("rho ", rho)
+            #print("rho ", rho)
             a += accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b)
-            print("drag", accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b))
+            #print("drag", accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b))
 
 
         return a    

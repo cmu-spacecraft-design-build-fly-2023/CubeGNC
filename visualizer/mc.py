@@ -11,7 +11,7 @@ import meshcat.transformations as tf
 
 class Visualizer:
 
-    def __init__(self, mesh_stl_path):
+    def __init__(self, mesh_stl_path  = "visualizer/scaled_cubesat_0005x.STL"):
         self.viz = meshcat.Visualizer()
 
         #stl_filename = "visualizer/example_cubesat_v7.STL"
@@ -23,7 +23,11 @@ class Visualizer:
 
     def start_visualization(self):
         self.viz.open()
+        self.viz["/Background"].set_property("top_color", [0, 0, 0.1])
+        self.viz["/Background"].set_property("bottom_color", [0, 0, 0.1])
 
+    def set_grid(self, on):
+        self.viz["/Background"].set_property("grid", on)
 
     def get_link(self):
         pass
@@ -31,34 +35,29 @@ class Visualizer:
 
     def apply_translation(self, translation_vector):
         # [x, y, z] translation
-        pass
+        self.viz["spacecraft"].set_transform(tf.translation_matrix(translation_vector))
 
     def apply_rotation(self, quat):
-        pass
-
-
-viz = meshcat.Visualizer()
-viz.open()
-
-
-stl_filename = "visualizer/scaled_cubesat_0005x.STL"
-mesh = meshcat.geometry.StlMeshGeometry.from_file(stl_filename)
-
-
-translation = [0.0, 0.0, 0.0]  # [x, y, z] translation
-rotation = tf.rotation_matrix(np.pi, [0, 0, 0])
-pose = np.dot(tf.translation_matrix(translation), rotation)
+        self.viz["spacecraft"].set_transform(tf.quaternion_matrix(quat))
 
 
 
-viz["/Background"].set_property("grid", False)
-viz["/Background"].set_property("top_color", [0, 0, 0.1])
-viz["/Background"].set_property("bottom_color", [0, 0, 0.1])
-
-meshcat_object = viz["cubesat"]
-meshcat_object.set_object(mesh)
+# Temporary local testing
+if __name__ == "__main__":
 
 
-sleep(5)
+    stl_filename = "visualizer/scaled_cubesat_0005x.STL"
+    viz = Visualizer(stl_filename)
+    viz.start_visualization()
+    viz.set_grid(False)
+    sleep(3)
+    viz.apply_translation([1,0,0])
+    q = np.random.rand(4)
+    q = q / np.linalg.norm(q)
+    q = [0.7071068, 0.7071068, 0, 0]
+    viz.apply_rotation(q)
+    sleep(3)
+    viz.apply_rotation(q)
+    sleep(3)
 
 
