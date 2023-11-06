@@ -15,7 +15,7 @@ pip install -e .
 ```
 ## Documentation
 
-See tests/test_spacecraft.py for a simple example
+See examples/examples_spacecraft.py for a simple example
 
 ## TODO
 - Sensor models: Magnetometer, Gyro, Camera outputs
