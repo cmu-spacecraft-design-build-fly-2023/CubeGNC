@@ -1,7 +1,8 @@
 import numpy as np
-from utils.transformations import *
-
 import brahe
+
+
+from CubeGNC.utils.transformations import *
 
 
 def apply_SO3_noise(vec, std):

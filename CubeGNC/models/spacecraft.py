@@ -6,10 +6,11 @@ from brahe import frames
 from brahe.epoch import Epoch
 from brahe.orbit_dynamics.gravity import accel_gravity
 
+from CubeGNC.dynamics.drag import *
+from CubeGNC.utils.transformations import *
+import CubeGNC.dynamics.astrodynamics as astro 
 
-import dynamics.astrodynamics as astro 
-from dynamics.drag import *
-from utils.transformations import *
+
 class Spacecraft:
 
     REQUIRED_KEYS = ["mode", "mass", "dt"]

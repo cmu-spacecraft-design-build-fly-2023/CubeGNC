@@ -1,6 +1,6 @@
 from time import sleep
-from models.spacecraft import Spacecraft
-from visualizer.mc import Visualizer
+from CubeGNC.models.spacecraft import Spacecraft
+from CubeGNC.visualizer.mc import Visualizer
 
 config = {
     "mode": "all",

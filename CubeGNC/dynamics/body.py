@@ -1,5 +1,5 @@
 import numpy as np
-from utils.transformations import *
+from CubeGNC.utils.transformations import *
 
 
 def quat_kinematics(q, ω):

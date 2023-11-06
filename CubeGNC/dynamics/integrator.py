@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.linalg import expm
-from utils.transformations import *
+from CubeGNC.utils.transformations import *
 
 # Runge-Kutta 4
 def rk4(dynamics, x, u, dt):
