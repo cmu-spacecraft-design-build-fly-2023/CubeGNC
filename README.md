@@ -15,10 +15,5 @@ pip install -e .
 ```
 ## Documentation
 
-See examples/examples_spacecraft.py for a simple example
+See examples/example_spacecraft.py for a simple example
 
-## TODO
-- Sensor models: Magnetometer, Gyro, Camera outputs
-- Magnetorquer
-- Atmospheric drag - switch to nrlmsise00 for the density model
-- Unit tests

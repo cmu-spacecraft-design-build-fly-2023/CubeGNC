@@ -13,7 +13,7 @@ import CubeGNC.dynamics.astrodynamics as astro
 
 class Spacecraft:
 
-    REQUIRED_KEYS = ["mode", "mass", "dt"]
+    REQUIRED_KEYS = ["mass", "dt"]
     H = np.vstack([np.zeros(3), np.eye(3)])
 
     DEFAULTS = {
@@ -38,53 +38,23 @@ class Spacecraft:
             raise ValueError(f"Missing required keys: {', '.join(missing_keys)}")
         
 
-        ## Mode and initial state
-        if "mode" in configuration:
-            if configuration["mode"] in {"attitude", "orbit", "all"}:
+        ## Initial state
+        if "initial_attitude" not in configuration:
+            raise ValueError(f"Missing required 'initial_attitude'.")
+        
+        if "initial_orbit_eci" not in configuration and "initial_orbit_oe" not in configuration:
+            raise ValueError(f"Missing required initial orbit: 'initial_orbit_eci' or 'initial_orbit_oe'.")
+        
+        # TODO Docs
+        orbit = None
+        if "initial_orbit_oe" in configuration:
+            orbit = astro.get_CART_from_OSC(configuration["initial_orbit_oe"])
+        else:
+            orbit = np.array(configuration["initial_orbit_eci"])
 
-                self.mode = configuration["mode"]
-
-
-                if self.mode == 'all':
-                    if "initial_attitude" not in configuration:
-                        raise ValueError(f"Missing required 'initial_attitude'.")
-                    
-                    if "initial_orbit_eci" not in configuration and "initial_orbit_oe" not in configuration:
-                        raise ValueError(f"Missing required initial orbit: 'initial_orbit_eci' or 'initial_orbit_oe'.")
-                    
-                    # TODO Docs
-                    orbit = None
-                    if "initial_orbit_oe" in configuration:
-                        orbit = astro.get_CART_from_OSC(configuration["initial_orbit_oe"])
-                    else:
-                        orbit = np.array(configuration["initial_orbit_eci"])
-
-                    # TODO check sizes 
-                    self._state = np.concatenate((orbit, np.array(configuration["initial_attitude"])))
-                    
-      
-
-                elif self.mode == 'orbit':
-                    if "initial_orbit_eci" not in configuration and "initial_orbit_oe" not in configuration:
-                        raise ValueError(f"Missing required initial orbit: 'initial_orbit_eci' or 'initial_orbit_oe'.")
-                    
-                    # TODO Docs
-                    if "initial_orbit_eci" in configuration:
-                        self._state = np.array(configuration["initial_orbit_eci"])
-                    else:
-                        self._state = astro.get_CART_from_OSC(configuration["initial_orbit_oe"])
-
-
-                elif self.mode == 'attitude':
-                    if "initial_attitude" not in configuration:
-                        raise ValueError(f"Missing required 'initial_attitude'.")
-                    
-                    # TODO Docs: [qw, qx, qy, qz, wx, wy, wz]
-                    self._state = np.array(configuration["initial_attitude"])
-                    # TODO check normalization quaternion 
-
-            else:
-                raise ValueError("Invalid mode provided. 'mode' must be 'attitude', 'orbit', or 'all'.")
+        # TODO check sizes 
+        self._state = np.concatenate((orbit, np.array(configuration["initial_attitude"])))
+        
 
 
         ##  Mass
@@ -183,18 +153,13 @@ class Spacecraft:
 
 
     def get_attitude_state(self):
-        if self.mode == "attitude":
-            return self._state[0:6]
-        elif self.mode == "all":
-            return self._state[6:13]
-        else:
-            raise Exception("Attitude only mode.")
+        return self._state[6:13]
+
 
     def get_eci_state(self):
-        if self.mode == "orbit" or self.mode == "all":
-            return self._state[0:6]
-        else:
-            raise Exception("Orbit only mode.")
+        return self._state[0:6]
+        
+
 
     def get_osculating_state(self):
         """
@@ -205,10 +170,8 @@ class Spacecraft:
         5. _ω_, Argument of Perigee [ramd]
         6. _M_, Mean anomaly [rad]
         """
-        if self.mode == "orbit" or self.mode == "all":
-            return astro.get_OSC_from_CART(self._state[0:6])
-        else:
-            raise Exception("Orbit only mode.")
+        return astro.get_OSC_from_CART(self._state[0:6])
+
 
     def get_state(self):
        return self._state
@@ -241,27 +204,14 @@ class Spacecraft:
 
         # TODO revamp + use of external fct
 
-        if self.mode == "all":
 
-            xdot = np.zeros(13)
-            xdot[0:3] = x[3:6]
-            xdot[3:6] = (1 / self._mass) * u[0:3] + self.orbital_accelerations() #- (self.µ / np.linalg.norm(x[0:3]) ** 3) * x[0:3]
-            xdot[6:10] = 0.5 * L(x[6:10]) @ self.H @ x[10:13]
-            xdot[10:13] = self.invJ.dot(u[3:6] - np.cross(x[10:13], np.dot(self.J, x[10:13])))
-            return xdot
-        
-        elif self.mode == "orbit":
+        xdot = np.zeros(13)
+        xdot[0:3] = x[3:6]
+        xdot[3:6] = (1 / self._mass) * u[0:3] + self.orbital_accelerations() #- (self.µ / np.linalg.norm(x[0:3]) ** 3) * x[0:3]
+        xdot[6:10] = 0.5 * L(x[6:10]) @ self.H @ x[10:13]
+        xdot[10:13] = self.invJ.dot(u[3:6] - np.cross(x[10:13], np.dot(self.J, x[10:13])))
+        return xdot
 
-            xdot = np.zeros(6)
-            xdot[0:3] = x[3:6]
-            xdot[3:6] = (1 / self._mass) * u + self.orbital_accelerations() #- (self.µ / np.linalg.norm(x[0:3]) ** 3) * x[0:3]
-            return xdot
-        
-        elif self.mode == "attitude":
-            xdot = np.zeros(7)
-            xdot[0:4] = 0.5 * L(x[0:4]) @ self.H @ x[4:7]
-            xdot[4:7] = self.invJ.dot(u - np.cross(x[4:7], np.dot(self.J, x[4:7])))
-            return xdot
 
 
     def set_dt(self, new_dt):
@@ -275,42 +225,17 @@ class Spacecraft:
 
         # TODO check u size for all cases
 
-        if self.mode == "all":
+        q = self._state[6:10]
+        ω = self._state[10:13]
 
-            q = self._state[6:10]
-            ω = self._state[10:13]
+        k1 = self._dt * self.dynamics(self._state, u)
+        k2 = self._dt * self.dynamics(self._state + k1 * 0.5, u)
+        k3 = self._dt * self.dynamics(self._state + k2 * 0.5, u)
+        k4 = self._dt * self.dynamics(self._state + k3, u)
 
-            k1 = self._dt * self.dynamics(self._state, u)
-            k2 = self._dt * self.dynamics(self._state + k1 * 0.5, u)
-            k3 = self._dt * self.dynamics(self._state + k2 * 0.5, u)
-            k4 = self._dt * self.dynamics(self._state + k3, u)
+        self._state = self._state + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4)
+        self._state[6:10] = np.dot(expm(R(self.H.dot(0.5 * self._dt * ω + (self._dt/6) * (k1[10:13] + k2[10:13] + k3[10:13])))), q)
 
-            self._state = self._state + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4)
-            self._state[6:10] = np.dot(expm(R(self.H.dot(0.5 * self._dt * ω + (self._dt/6) * (k1[10:13] + k2[10:13] + k3[10:13])))), q)
-
-
-        elif self.mode == 'attitude':
-
-            q = self._state[0:4]
-            ω = self._state[4:7]
-
-            k1 = self._dt * self.dynamics(self._state, u)
-            k2 = self._dt * self.dynamics(self._state + k1 * 0.5, u)
-            k3 = self._dt * self.dynamics(self._state + k2 * 0.5, u)
-            k4 = self._dt * self.dynamics(self._state + k3, u)
-
-            self._state = self._state + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4)
-            self._state[0:4] = np.dot(expm(self.H.dot(0.5 * self._dt * ω + (self._dt/6) * (k1[4:7] + k2[4:7] + k3[4:7]))), q)
-        
-
-        elif self.mode == 'orbit':
-
-            k1 = self._dt * self.dynamics(self._state, u)
-            k2 = self._dt * self.dynamics(self._state + k1 * 0.5, u)
-            k3 = self._dt * self.dynamics(self._state + k2 * 0.5, u)
-            k4 = self._dt * self.dynamics(self._state + k3, u)
-
-            self._state = self._state + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4)
 
 
 
@@ -321,7 +246,6 @@ if __name__ == "__main__":
 
 
     config = {
-        "mode": "all",
         "mass": 2.0,
         "inertia": [10,20,30,0.0,0.0,0.0],
         "dt": 1.0,

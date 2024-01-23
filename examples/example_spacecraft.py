@@ -3,7 +3,6 @@ from CubeGNC.models.spacecraft import Spacecraft
 from CubeGNC.visualizer.mc import Visualizer
 
 config = {
-    "mode": "all",
     "initial_attitude":[1.0,0,0,0,0.1,-0.23,0.52],
     "initial_orbit_oe":[1.5e6, 0, 0, 0, 0, 0],
     "mass": 1.7, # kg
@@ -22,7 +21,7 @@ print(spacecraft.get_state())
 
 
 
-stl_filename = "visualizer/scaled_cubesat_0005x.STL"
+stl_filename = "CubeGNC/visualizer/scaled_cubesat_0005x.STL"
 viz = Visualizer(stl_filename)
 viz.start_visualization()
 viz.set_grid(False)
@@ -37,6 +36,7 @@ for i in range(N):
     q = spacecraft.get_state()[6:10]
     print(q)
     viz.apply_attitude(q)
+
     sleep(dt)
 
 
