@@ -9,6 +9,8 @@ References:
 
 import numpy as np
 import brahe
+import pandas as pd
+from nrlmsise00 import msise_flat
 
 OMEGA_EARTH = 7.292115146706979e-5        # [rad/s] (Vallado 4th Ed page 222)
 
@@ -93,9 +95,34 @@ def density_harris_priester(x, r_sun):
 
     return density
 
- 
+def retrieve_sw_data(epoch_dt, sw):
+    # Load space weather data
+    #sw = sw_daily()
 
-def accel_drag(x, rho, mass, area, Cd, T):
+    # Check and set the timezone to UTC if it's not already
+    if sw.index.tz is None:
+        sw = sw.tz_localize("utc")
+
+    epoch = pd.to_datetime(epoch_dt, utc=True)
+
+    # Calculate the previous day for f10.7
+    epoch_prev = epoch - pd.to_timedelta("1d")
+
+    # Retrieve the specific data
+    ap = sw.at[epoch.floor("D"), "Apavg"]
+    f107 = sw.at[epoch_prev.floor("D"), "f107_obs"]
+    f107a = sw.at[epoch.floor("D"), "f107_81ctr_obs"]
+
+    return ap, f107, f107a
+
+
+def compute_rho(epoch_dt, altitude, latitude, longitude, sw):
+    ap, f107, f107a = retrieve_sw_data(epoch_dt, sw)
+    rho = msise_flat(epoch_dt, altitude, latitude, longitude, f107a, f107, ap, method='gt7d')[5]
+    rho = rho*1000
+    return rho
+
+def accel_drag(epoch_dt, x, mass, area, Cd, T, sw):
     """
     Computes the perturbing, non-conservative acceleration caused by atmospheric
     drag assuming that the ballistic properties of the spacecraft are captured by
@@ -119,6 +146,12 @@ def accel_drag(x, rho, mass, area, Cd, T):
     # Velocity relative to the Earth's atmosphere
     v_rel = v_tod - np.cross(omega, r_tod)
     v_abs = np.linalg.norm(v_rel)
+
+    altitude = 550
+    latitude = 60
+    longitude = -70
+    rho = compute_rho(epoch_dt, altitude, latitude, longitude, sw)
+    #print('rho', rho)
 
     # Acceleration
     a_tod = -0.5 * Cd * (area / mass) * rho * v_abs * v_rel
