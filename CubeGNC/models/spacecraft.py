@@ -8,8 +8,9 @@ from brahe.orbit_dynamics.gravity import accel_gravity, accel_thirdbody_sun,acce
 
 from CubeGNC.dynamics.drag import *
 from CubeGNC.utils.transformations import *
-import CubeGNC.dynamics.astrodynamics as astro 
-
+import CubeGNC.dynamics.astrodynamics as astro
+from datetime import datetime
+from spaceweather import sw_daily
 
 class Spacecraft:
 
@@ -114,6 +115,9 @@ class Spacecraft:
         ## TODO let the user define 
         ## Found bugs in underlying pysofa in brahe ~
         self.epoch = Epoch(2022,11,26, 12, 0, 5, 0)
+        self.epoch_dt = datetime(2022,11,26, 12, 0, 5, 0)
+
+        self.sw = sw_daily(update=True)
 
         if "drag" in configuration:
             self._drag = configuration["drag"]
@@ -189,11 +193,11 @@ class Spacecraft:
         #a += - (self.µ / np.linalg.norm(x_eci[0:3]) ** 3) * x_eci[0:3]
 
         if self._drag:
-            r_sun = brahe.sun_position(self.epoch)
-            rho = density_harris_priester(x_eci[0:6], r_sun)
+            #r_sun = brahe.sun_position(self.epoch)
+            #rho = density_harris_priester(x_eci[0:6], r_sun)
             #print("rho ", rho)
-            a += accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b)
-            #print("drag", accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b))
+            a += accel_drag(self.epoch_dt, x_eci[0:6], self._mass, self._crossA, self._Cd, R_i2b, self.sw)
+            #print("drag", accel_drag(self.epoch_dt, x_eci[0:6], self._mass, self._crossA, self._Cd, R_i2b))
 
         # acc due to third body moon
         a += accel_thirdbody_moon(self.epoch,x_eci[0:6])
@@ -262,6 +266,7 @@ if __name__ == "__main__":
     }
 
 
+
     spacecraft = Spacecraft(config)
     print(spacecraft.J)
     print(spacecraft.get_state())
@@ -271,4 +276,3 @@ if __name__ == "__main__":
         print(spacecraft.get_state()[0:6])
 
     print(spacecraft.epoch)
-
