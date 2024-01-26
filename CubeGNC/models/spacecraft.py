@@ -117,7 +117,7 @@ class Spacecraft:
         self.epoch = Epoch(2022,11,26, 12, 0, 5, 0)
         self.epoch_dt = datetime(2022,11,26, 12, 0, 5, 0)
 
-        self.sw = sw_daily()
+        self.sw = sw_daily(update=True)
 
         if "drag" in configuration:
             self._drag = configuration["drag"]
