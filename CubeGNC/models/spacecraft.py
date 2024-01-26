@@ -4,7 +4,7 @@ from scipy.linalg import expm
 import brahe
 from brahe import frames
 from brahe.epoch import Epoch
-from brahe.orbit_dynamics.gravity import accel_gravity
+from brahe.orbit_dynamics.gravity import accel_gravity, accel_thirdbody_sun,accel_thirdbody_moon
 
 from CubeGNC.dynamics.drag import *
 from CubeGNC.utils.transformations import *
@@ -195,6 +195,10 @@ class Spacecraft:
             a += accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b)
             #print("drag", accel_drag(x_eci[0:6], rho, self._mass, self._crossA, self._Cd, R_i2b))
 
+        # acc due to third body moon
+        a += accel_thirdbody_moon(self.epoch,x_eci[0:6])
+        # # acc due to third body sun 
+        a += accel_thirdbody_sun(self.epoch,x_eci[0:6])
 
         return a    
 
@@ -261,6 +265,7 @@ if __name__ == "__main__":
     spacecraft = Spacecraft(config)
     print(spacecraft.J)
     print(spacecraft.get_state())
+    print("propogating")
     for i in range(10):
         spacecraft.advance()
         print(spacecraft.get_state()[0:6])
