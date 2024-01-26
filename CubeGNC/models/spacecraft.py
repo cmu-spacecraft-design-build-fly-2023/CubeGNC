@@ -259,7 +259,7 @@ if __name__ == "__main__":
         "dt": 1.0,
         "flexible": False,
         "initial_attitude":[1.0,0,0,0,0.1,0.1,0.1],
-        "initial_orbit_oe":[1.5e6, 0, 0, 0, 0, 0],
+        "initial_orbit_oe":[6.92e6, 0, 0, 0, 0, 0],
         "gravity_order": 5,
         "gravity_degree": 5,
         "drag": True
@@ -270,7 +270,6 @@ if __name__ == "__main__":
     spacecraft = Spacecraft(config)
     print(spacecraft.J)
     print(spacecraft.get_state())
-    print("propogating")
     for i in range(10):
         spacecraft.advance()
         print(spacecraft.get_state()[0:6])

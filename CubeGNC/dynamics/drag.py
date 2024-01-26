@@ -11,6 +11,7 @@ import numpy as np
 import brahe
 import pandas as pd
 from nrlmsise00 import msise_flat
+from brahe import coordinates
 
 OMEGA_EARTH = 7.292115146706979e-5        # [rad/s] (Vallado 4th Ed page 222)
 
@@ -147,10 +148,12 @@ def accel_drag(epoch_dt, x, mass, area, Cd, T, sw):
     v_rel = v_tod - np.cross(omega, r_tod)
     v_abs = np.linalg.norm(v_rel)
 
-    altitude = 550
-    latitude = 60
-    longitude = -70
-    rho = compute_rho(epoch_dt, altitude, latitude, longitude, sw)
+    r_eci = x[0:3]
+    r_ecef = T@r_eci
+
+    longitude,latitude,altitude = coordinates.sECEFtoGEOC(r_ecef, use_degrees='true')
+
+    rho = compute_rho(epoch_dt, altitude/1000, latitude, longitude, sw)
     #print('rho', rho)
 
     # Acceleration
