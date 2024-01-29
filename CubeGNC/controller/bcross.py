@@ -25,7 +25,7 @@ class Controller:
     @staticmethod
     def _compute_min_moment_of_inertia(inertia_matrix):
         """
-        Computes the the minimum eigenvalue of the inertia matrix.
+        Computes the minimum eigenvalue of the inertia matrix.
 
         Args:
             inertia_matrix: The Inertia Matrix for a rigid-body

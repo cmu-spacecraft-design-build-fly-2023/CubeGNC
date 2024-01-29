@@ -13,6 +13,8 @@ import CubeGNC.dynamics.astrodynamics as astro
 from datetime import datetime
 from spaceweather import sw_daily
 from CubeGNC.models.sensors import *
+from CubeGNC.models.actuators import *
+from CubeGNC.controller.bcross import *
 
 class Spacecraft:
 
@@ -217,7 +219,7 @@ class Spacecraft:
 
 
 
-    def dynamics(self, x, u):
+    def dynamics(self, x, u, B_body):
 
         # TODO revamp + use of external fct
 
@@ -226,7 +228,7 @@ class Spacecraft:
         xdot[0:3] = x[3:6]
         xdot[3:6] = (1 / self._mass) * u[0:3] + self.orbital_accelerations() #- (self.µ / np.linalg.norm(x[0:3]) ** 3) * x[0:3]
         xdot[6:10] = 0.5 * L(x[6:10]) @ self.H @ x[10:13]
-        xdot[10:13] = self.invJ.dot(u[3:6] - np.cross(x[10:13], np.dot(self.J, x[10:13])))
+        xdot[10:13] = self.invJ.dot(np.cross(u[3:6], B_body) - np.cross(x[10:13], np.dot(self.J, x[10:13])))
         return xdot
 
 
@@ -238,17 +240,17 @@ class Spacecraft:
         return True
 
               
-    def advance(self, u=np.zeros(6)):
+    def advance(self, u, B_body):
 
         # TODO check u size for all cases
 
         q = self._state[6:10]
         ω = self._state[10:13]
 
-        k1 = self._dt * self.dynamics(self._state, u)
-        k2 = self._dt * self.dynamics(self._state + k1 * 0.5, u)
-        k3 = self._dt * self.dynamics(self._state + k2 * 0.5, u)
-        k4 = self._dt * self.dynamics(self._state + k3, u)
+        k1 = self._dt * self.dynamics(self._state, u, B_body)
+        k2 = self._dt * self.dynamics(self._state + k1 * 0.5, u, B_body)
+        k3 = self._dt * self.dynamics(self._state + k2 * 0.5, u, B_body)
+        k4 = self._dt * self.dynamics(self._state + k3, u, B_body)
 
         self._state = self._state + (1/6) * (k1 + 2 * k2 + 2 * k3 + k4)
         self._state[6:10] = np.dot(expm(R(self.H.dot(0.5 * self._dt * ω + (self._dt/6) * (k1[10:13] + k2[10:13] + k3[10:13])))), q)
@@ -279,12 +281,17 @@ if __name__ == "__main__":
 
     spacecraft = Spacecraft(config)
     magnetometer = Magnetometer(0.0, 5.0)
+    magnetorquer = Magnetorquer(10,  0.6e-3, 0.036e-3, 315)
+    bcross_controller = Controller(spacecraft, magnetorquer)
     print(spacecraft.J)
     print(spacecraft.get_state())
     for i in range(10):
         B_eci_nT, B_body = get_magnetic_field(spacecraft.get_state(), spacecraft.get_epoch())
         B_body_meas = magnetometer.measure(B_body)
-        spacecraft.advance()
+        control_dipole_moment = bcross_controller.get_control_dipole(spacecraft.get_state()[10:13], B_body_meas.T)
+        u = np.zeros(6)
+        u[3:6] = control_dipole_moment
+        spacecraft.advance(u, B_body.T.squeeze())
         print(spacecraft.get_state()[0:6])
 
     print(spacecraft._epoch)

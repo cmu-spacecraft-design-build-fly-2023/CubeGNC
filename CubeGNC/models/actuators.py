@@ -6,6 +6,9 @@ class Magnetorquer():
         self.trace_thickness = trace_thickness
         self.no_of_turns = no_of_turns
         self.trace_area = trace_thickness * trace_width
+        self.maximum_dipole_moment = self.compute_max_dipole_strength()
+        self.output_range = self.maximum_dipole_moment
+
     def compute_coil_resistance(self, length, width):
         copper_resistivity = 1.77e-8
         perimeter = 2 * (length + width)
@@ -16,9 +19,8 @@ class Magnetorquer():
         print(coil_resistance)
         coil_current = self.voltage / coil_resistance
         maximum_dipole_moment = self.no_of_turns * coil_current * 0.1 * 0.1
-        self.maximum_dipole_moment = maximum_dipole_moment*np.ones(3)
-        self.output_range = self.maximum_dipole_moment
-        return self.maximum_dipole_moment
+        maximum_dipole_moment = maximum_dipole_moment*np.ones(3)
+        return maximum_dipole_moment
 
 # Temporary local testing
 if __name__ == "__main__":
