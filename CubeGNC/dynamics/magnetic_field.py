@@ -26,5 +26,9 @@ def get_magnetic_field(state, epoch):
     # convert to eci
     B_eci_nT = eci_Q_ecef @ ecef_Q_ned @ BNED_nT
     # convert from nT to T
-    #B_eci_T = B_eci_nT * 1e-9
-    return B_eci_nT
+    B_eci_T = B_eci_nT * 1e-9
+    # pull attitude and get the DCM
+    NQB= dcm_from_q(state[6:10])
+    # magnetic field in the body
+    B_body = np.transpose(NQB)@B_eci_T
+    return B_eci_nT, B_body

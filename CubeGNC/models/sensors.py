@@ -72,16 +72,13 @@ class Gyroscope():
 
     
 class Magnetometer():
-    """
     def __init__(self, rotate_std_deg, noise_std_deg):
         self.offset = dcm_from_phi(radians(rotate_std_deg) * np.random.randn(3))
         self.noise_std = radians(noise_std_deg)
 
-    def measure(self, spacecraft):
-        true_B_body = ...
-        measured_value = apply_SO3_noise(self.offset * true_B_body, self.noise_std)
+    def measure(self, true_B_body):
+        measured_value = apply_SO3_noise(self.offset @ true_B_body, self.noise_std)
         return measured_value
-    """
     
 
 class Vision():

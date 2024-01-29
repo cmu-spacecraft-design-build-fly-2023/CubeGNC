@@ -12,6 +12,7 @@ from CubeGNC.utils.transformations import *
 import CubeGNC.dynamics.astrodynamics as astro
 from datetime import datetime
 from spaceweather import sw_daily
+from CubeGNC.models.sensors import *
 
 class Spacecraft:
 
@@ -277,11 +278,12 @@ if __name__ == "__main__":
 
 
     spacecraft = Spacecraft(config)
+    magnetometer = Magnetometer(0.0, 5.0)
     print(spacecraft.J)
     print(spacecraft.get_state())
     for i in range(10):
-        mag_field = get_magnetic_field(spacecraft.get_state(), spacecraft.get_epoch())
-        print('mag_field', mag_field)
+        B_eci_nT, B_body = get_magnetic_field(spacecraft.get_state(), spacecraft.get_epoch())
+        B_body_meas = magnetometer.measure(B_body)
         spacecraft.advance()
         print(spacecraft.get_state()[0:6])
 
