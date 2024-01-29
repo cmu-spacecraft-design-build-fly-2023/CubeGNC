@@ -7,6 +7,7 @@ from brahe.epoch import Epoch
 from brahe.orbit_dynamics.gravity import accel_gravity, accel_thirdbody_sun,accel_thirdbody_moon
 
 from CubeGNC.dynamics.drag import *
+from CubeGNC.dynamics.magnetic_field import *
 from CubeGNC.utils.transformations import *
 import CubeGNC.dynamics.astrodynamics as astro
 from datetime import datetime
@@ -114,7 +115,7 @@ class Spacecraft:
 
         ## TODO let the user define 
         ## Found bugs in underlying pysofa in brahe ~
-        self.epoch = Epoch(2022,11,26, 12, 0, 5, 0)
+        self._epoch = Epoch(2022,11,26, 12, 0, 5, 0)
         self.epoch_dt = datetime(2022,11,26, 12, 0, 5, 0)
 
         self.sw = sw_daily(update=True)
@@ -123,7 +124,11 @@ class Spacecraft:
             self._drag = configuration["drag"]
         else:
             self._drag = self.DEFAULTS["drag"]
-        
+
+        if "third_body" in configuration:
+            self._third_body = configuration["third_body"]
+        else:
+            self._third_body = self.DEFAULTS["third-body"]
 
         # TODO check
         if "crossA" in configuration:
@@ -180,6 +185,8 @@ class Spacecraft:
     def get_state(self):
        return self._state
 
+    def get_epoch(self):
+       return self._epoch
 
     def orbital_accelerations(self):
         #  x_ecef = R_i2b @ x
@@ -188,7 +195,7 @@ class Spacecraft:
 
         a = np.zeros(3)
 
-        R_i2b = frames.rECItoECEF(self.epoch)
+        R_i2b = frames.rECItoECEF(self._epoch)
         a += accel_gravity(x_eci[0:6], R_i2b, n_max=self._gravity_degree, m_max=self._gravity_order)
         #a += - (self.µ / np.linalg.norm(x_eci[0:3]) ** 3) * x_eci[0:3]
 
@@ -199,10 +206,11 @@ class Spacecraft:
             a += accel_drag(self.epoch_dt, x_eci[0:6], self._mass, self._crossA, self._Cd, R_i2b, self.sw)
             #print("drag", accel_drag(self.epoch_dt, x_eci[0:6], self._mass, self._crossA, self._Cd, R_i2b))
 
-        # acc due to third body moon
-        a += accel_thirdbody_moon(self.epoch,x_eci[0:6])
-        # # acc due to third body sun 
-        a += accel_thirdbody_sun(self.epoch,x_eci[0:6])
+        if self._third_body:
+            # acc due to third body moon
+            a += accel_thirdbody_moon(self._epoch,x_eci[0:6])
+            # # acc due to third body sun
+            a += accel_thirdbody_sun(self._epoch,x_eci[0:6])
 
         return a    
 
@@ -262,7 +270,8 @@ if __name__ == "__main__":
         "initial_orbit_oe":[6.92e6, 0, 0, 0, 0, 0],
         "gravity_order": 5,
         "gravity_degree": 5,
-        "drag": True
+        "drag": True,
+        "third_body": True
     }
 
 
@@ -271,7 +280,9 @@ if __name__ == "__main__":
     print(spacecraft.J)
     print(spacecraft.get_state())
     for i in range(10):
+        mag_field = get_magnetic_field(spacecraft.get_state(), spacecraft.get_epoch())
+        print('mag_field', mag_field)
         spacecraft.advance()
         print(spacecraft.get_state()[0:6])
 
-    print(spacecraft.epoch)
+    print(spacecraft._epoch)
