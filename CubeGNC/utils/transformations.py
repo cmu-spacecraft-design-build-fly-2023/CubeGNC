@@ -79,3 +79,14 @@ def quat_to_axisangle(q):
 def dcm_from_phi(Φ):
     """Compute DCM from an axis-angle"""
     return expm(skew_symmetric(Φ))
+
+def ecef_Q_ned_mat(longitude, latitude):
+    phi = np.radians(latitude)
+    lam = np.radians(longitude)
+
+    ecef_Q_ned = np.array([[-np.sin(phi) * np.cos(lam), -np.sin(lam), -np.cos(phi) * np.cos(lam)],
+                           [-np.sin(phi) * np.sin(lam), np.cos(lam), -np.cos(phi) * np.sin(lam)],
+                           [np.cos(phi), 0.0, -np.sin(phi)]])
+
+    return ecef_Q_ned
+

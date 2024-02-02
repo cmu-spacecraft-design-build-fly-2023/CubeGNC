@@ -50,8 +50,7 @@ class Controller:
             The calculated gain value.
         """
 
-        orbital_rate = GM / np.sqrt(semi_major_axis**3)
-
+        orbital_rate = 1/np.sqrt(semi_major_axis**3/GM)
         k_gain = 2 * orbital_rate * (1 + np.sin(inclination)) * min_moment_of_inertia
         return k_gain
 
