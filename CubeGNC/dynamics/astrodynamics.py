@@ -69,7 +69,20 @@ def get_OSC_from_CART(x_oe, degrees=False):
 def sample_orbit():
     pass
 
+def axis_angle_to_quaternion(r):
+  """
+  Converts an axis-angle representation of a rotation to a quaternion.
 
+  Args:
+    r: A 3D vector representing the rotation axis and angle.
+
+  Returns:
+    A NumPy array representing the quaternion.
+  """
+
+  theta = np.linalg.norm(r)
+  q = np.array([np.cos(theta / 2), r * np.sinc(theta / (2 * np.pi)) / 2])
+  return q
 
 
 
